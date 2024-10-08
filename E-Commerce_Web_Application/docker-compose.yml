@@ -1,20 +1,25 @@
 version: '3'
 services:
   user:
-    image: user
+    build:
+      context: ./user
+      dockerfile: Dockerfile
     ports:
       - "3001:3001"
     command: node server.js
 
   cart:
-    image: cart
+    build:
+      context: ./cart
+      dockerfile: Dockerfile
     ports:
       - "3003:3003"
     command: node server.js  
 
   product:
-    image: product
+    build:
+      context: ./product
+      dockerfile: Dockerfile
     ports:
       - "3002:3002"
     command: node server.js
-    
