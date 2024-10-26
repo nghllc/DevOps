@@ -31,7 +31,7 @@ jobs:
       - name: Build and push Cart image
         run: |
           aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
-          cart_image="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/dacn-repo:cart" # Tag for Cart image
+          cart_image="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/dacn-repo:cart-${GITHUB_SHA}"
           cd E-Commerce_Web_Application/Cart
           docker build -t $cart_image .
           docker push $cart_image
@@ -39,7 +39,7 @@ jobs:
       - name: Build and push User image
         run: |
           aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
-          user_image="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/dacn-repo:user" # Tag for User image
+          user_image="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/dacn-repo:user-${GITHUB_SHA}"
           cd E-Commerce_Web_Application/User
           docker build -t $user_image .
           docker push $user_image
@@ -47,7 +47,7 @@ jobs:
       - name: Build and push Product image
         run: |
           aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
-          product_image="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/dacn-repo:product" # Tag for Product image
+          product_image="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/dacn-repo:product-${GITHUB_SHA}"
           cd E-Commerce_Web_Application/Product
           docker build -t $product_image .
           docker push $product_image
