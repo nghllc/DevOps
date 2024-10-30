@@ -1,5 +1,15 @@
 version: '3'
 services:
+  front-end:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    command: npm run dev -- --host
+    environment:
+      - NODE_ENV=development
+  
   user:
     build:
       context: ./user
