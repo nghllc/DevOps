@@ -51,3 +51,11 @@ jobs:
           cd E-Commerce_Web_Application/Product
           docker build -t $product_image .
           docker push $product_image
+
+      - name: Build and push Front-end image
+        run: |
+          aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+          product_image="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/dacn-repo:product-${GITHUB_SHA}"
+          cd E-Commerce_Web_Application/front-end
+          docker build -t $product_image .
+          docker push $product_image
