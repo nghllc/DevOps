@@ -1,4 +1,4 @@
-name: Build
+name: Check code quality with SonarQube
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    name: Build and analyze
+    name: Check code quality with SonarQube
     runs-on: ubuntu-latest
     
     steps:
