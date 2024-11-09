@@ -3,7 +3,7 @@ name: Check code quality with SonarQube
 on:
   push:
     branches:
-      - dev
+      - main
 
 
 jobs:
