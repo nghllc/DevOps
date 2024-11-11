@@ -1,46 +1,53 @@
 name: Build image and push to ECR
 
 on:
-  workflow_dispatch:  # Allows manual
-  # push:
-  #   branches:
-  #     - main
+  workflow_dispatch:
 
 jobs:
   push-to-ecr:
     runs-on: ubuntu-22.04
+    env:
+      MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      MONGO_CLUSTER: ${{ secrets.MONGO_CLUSTER }}
+      MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      DOT_ENV_FILE_NAME: ".env.template"  # Define your dotenv filename or replace with a GitHub secret if needed
+
     steps:
-      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Configure AWS credentials
+      - name: Prepare dotenv
+        run: |
+          rm -f .env
+          cat $DOT_ENV_FILE_NAME >> .env
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-      # Step 3: Log in to Amazon ECR
       - name: Log in to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
-      # Step 4: Create ECR repository if it doesn't exist
-      - name: Create ECR repository
+      - name: Create ECR repository if it doesn't exist
         run: |
           aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
           aws ecr describe-repositories --repository-names "lamlt-sonvt" || aws ecr create-repository --repository-name "lamlt-sonvt"
 
-      # Step 5: Build and push Docker images for each service
       - name: Build and push images
         run: |
           services=("Cart" "User" "Product" "front-end")
           for service in "${services[@]}"; do
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
             commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            image_name="${aws_account_id}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
             cd "E-Commerce_Web_Application/$service" || exit 1
             docker build -t "$image_name" .
             docker push "$image_name"
