@@ -15,16 +15,10 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      DOT_ENV_FILE_NAME: ".env.template"  # Define your dotenv filename or replace with a GitHub secret if needed
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Prepare dotenv
-        run: |
-          rm -f .env
-          cat $DOT_ENV_FILE_NAME >> .env
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -48,8 +42,21 @@ jobs:
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
             commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
             image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
+            
+            # Navigate into each service directory
             cd "E-Commerce_Web_Application/$service" || exit 1
+            
+            # Create .env file in the current service directory
+            echo "MONGO_USERNAME=${{ env.MONGO_USERNAME }}" > .env
+            echo "MONGO_PASSWORD=${{ env.MONGO_PASSWORD }}" >> .env
+            echo "MONGO_CLUSTER=${{ env.MONGO_CLUSTER }}" >> .env
+            echo "MONGO_DBNAME=${{ env.MONGO_DBNAME }}" >> .env
+            echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}" >> .env
+
+            # Build and push Docker image
             docker build -t "$image_name" .
             docker push "$image_name"
+
+            # Go back to the root directory
             cd - || exit 1
           done
