@@ -35,7 +35,7 @@ jobs:
           aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
           aws ecr describe-repositories --repository-names "lamlt-sonvt" || aws ecr create-repository --repository-name "lamlt-sonvt"
 
-      - name: Build and push images
+      - name: Build images
         run: |
           services=("Cart" "User" "Product" "front-end")
           for service in "${services[@]}"; do
@@ -53,10 +53,21 @@ jobs:
             echo "MONGO_DBNAME=${{ env.MONGO_DBNAME }}" >> .env
             echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}" >> .env
 
-            # Build and push Docker image
+            # Build Docker image
             docker build -t "$image_name" .
-            docker push "$image_name"
 
             # Go back to the root directory
             cd - || exit 1
+          done
+
+      - name: Push images
+        run: |
+          services=("Cart" "User" "Product" "front-end")
+          for service in "${services[@]}"; do
+            aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+            commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
+            
+            # Push Docker image
+            docker push "$image_name"
           done
