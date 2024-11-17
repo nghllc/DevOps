@@ -46,7 +46,7 @@ jobs:
           for service in "${services[@]}"; do
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
             commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"
             
             # Navigate into each service directory
             cd "E-Commerce_Web_Application/$service" || exit 1
@@ -102,7 +102,7 @@ jobs:
           for service in "${services[@]}"; do
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
             commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"  
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"  
             trivy --cache-dir ~/.cache/trivy image --exit-code 0 --format table --ignore-unfixed --severity CRITICAL,HIGH --skip-db-update --scanners vuln "$image_name"
           done
 
@@ -113,7 +113,7 @@ jobs:
           for service in "${services[@]}"; do
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
             commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"
             
             # Push Docker image to ECR
             docker push "$image_name"
