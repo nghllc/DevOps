@@ -1,19 +1,28 @@
 name: Checkov
 on:
-    workflow_dispatch:
+  workflow_dispatch:
+
 jobs:
   build:
-
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v2
+
       - name: Set up Python 3.8
         uses: actions/setup-python@v4
         with:
           python-version: 3.8
+
       - name: Test with Checkov
         id: checkov
         uses: bridgecrewio/checkov-action@master
         with:
           directory: terraform
-          framework: terraform 
+          framework: terraform
+          
+      - name: Upload SARIF results as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: checkov-sarif-results
+          path: results.sarif
