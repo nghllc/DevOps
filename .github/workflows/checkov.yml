@@ -1,8 +1,6 @@
 name: Checkov
 on:
-  push:
-    branches:
-      - terraform
+    workflow_dispatch:
 jobs:
   build:
 
