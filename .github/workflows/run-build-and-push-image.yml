@@ -20,6 +20,37 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Download and install Trivy
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.tar.gz
+          tar -xzf trivy_0.57.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+
+      # Set up cache for Trivy database, include version in the cache key
+      - name: Set Up Trivy Cache
+        id: trivy-cache
+        uses: actions/cache@v4
+        with:
+            path: ~/.cache/trivy/db
+            key: ${{ runner.os }}-trivy-db-cache
+
+      # Only download the Trivy offline database if cache miss
+      - name: Download Trivy Offline Database
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+            oras pull ghcr.io/aquasecurity/trivy-db:2
+            ls -lah
+
+      # Only extract the database if cache miss
+      - name: Set Up Trivy Database in Cache
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p ~/.cache/trivy/db
+          tar -xvf db.tar.gz -C ~/.cache/trivy/db
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -65,36 +96,6 @@ jobs:
             cd - || exit 1
           done
            
-# Download and install Trivy
-      - name: Install Trivy
-        run: |
-          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.tar.gz
-          tar -xzf trivy_0.57.0_Linux-64bit.tar.gz
-          sudo mv trivy /usr/local/bin/
-
-      # Set up cache for Trivy database, include version in the cache key
-      - name: Set Up Trivy Cache
-        id: trivy-cache
-        uses: actions/cache@v4
-        with:
-            path: ~/.cache/trivy/db
-            key: ${{ runner.os }}-trivy-db-cache
-
-      # Only download the Trivy offline database if cache miss
-      - name: Download Trivy Offline Database
-        if: steps.trivy-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-            oras pull ghcr.io/aquasecurity/trivy-db:2
-            ls -lah
-
-      # Only extract the database if cache miss
-      - name: Set Up Trivy Database in Cache
-        if: steps.trivy-cache.outputs.cache-hit != 'true'
-        shell: bash
-        run: |
-          mkdir -p ~/.cache/trivy/db
-          tar -xvf db.tar.gz -C ~/.cache/trivy/db
       # Run Trivy to scan Docker image
       - name: Run Trivy scan
         run: |
