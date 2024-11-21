@@ -2,7 +2,7 @@ name: Checkov scanning
 on:
   push:
     branches:
-      - terraform
+      - 'terraform'
 
 jobs:
   build:
@@ -18,7 +18,7 @@ jobs:
 
       - name: Test with Checkov
         id: checkov
-        uses: bridgecrewio/checkov-action@master
+        uses: bridgecrewio/checkov-action@v1
         with:
           directory: terraform
           framework: terraform
