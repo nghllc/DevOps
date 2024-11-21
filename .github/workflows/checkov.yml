@@ -1,6 +1,8 @@
-name: Checkov
+name: Checkov scanning
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - terraform
 
 jobs:
   build:
