@@ -20,6 +20,31 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # Prepare dotenv file
+      - name: Prepare dotenv for E-Commerce services
+        run: |
+          # Remove existing .env file if it exists
+          rm -rf .env
+          
+          # Create .env file with the necessary environment variables
+          echo "MONGO_USERNAME=${{ secrets.MONGO_USERNAME }}" >> .env
+          echo "MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}" >> .env
+          echo "MONGO_CLUSTER=${{ secrets.MONGO_CLUSTER }}" >> .env
+          echo "MONGO_DBNAME=${{ secrets.MONGO_DBNAME }}" >> .env
+          echo "ACCESS_TOKEN=${{ secrets.ACCESS_TOKEN }}" >> .env
+          echo "AWS_REGION=${{ secrets.AWS_REGION }}" >> .env
+          echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> .env
+          echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> .env
+
+      # Copy .env file to each service directory
+      - name: Copy dotenv file to service directories
+        run: |
+          services=("Cart" "User" "Product" "front-end")
+          for service in "${services[@]}"; do
+            echo "Copying .env file to $service directory..."
+            cp .env "E-Commerce_Web_Application/$service/.env"
+          done
+
       # Download and install Trivy
       - name: Install Trivy
         run: |
@@ -81,13 +106,6 @@ jobs:
             
             # Navigate into each service directory
             cd "E-Commerce_Web_Application/$service" || exit 1
-            
-            # Create .env file in the current service directory
-            echo "MONGO_USERNAME=${{ env.MONGO_USERNAME }}" > .env
-            echo "MONGO_PASSWORD=${{ env.MONGO_PASSWORD }}" >> .env
-            echo "MONGO_CLUSTER=${{ env.MONGO_CLUSTER }}" >> .env
-            echo "MONGO_DBNAME=${{ env.MONGO_DBNAME }}" >> .env
-            echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}" >> .env
 
             # Build Docker image
             docker build -t "$image_name" .
