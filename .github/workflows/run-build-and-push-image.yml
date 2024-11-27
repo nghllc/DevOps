@@ -102,7 +102,7 @@ jobs:
           for service in "${services[@]}"; do
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
             commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}:latest"
             
             # Navigate into each service directory
             cd "E-Commerce_Web_Application/$service" || exit 1
@@ -132,7 +132,7 @@ jobs:
           for service in "${services[@]}"; do
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
             commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
-            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}:latest"
             
             # Push Docker image to ECR
             docker push "$image_name"
