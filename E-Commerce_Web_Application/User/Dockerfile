@@ -2,7 +2,7 @@ FROM node
 
 WORKDIR /app
 
-COPY . /app
+COPY . .
 
 EXPOSE 3001:3001
 
