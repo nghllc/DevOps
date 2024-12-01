@@ -1,4 +1,4 @@
-name: Build image, scan image and push to ECR
+name: 1 image only
 
 on:
   workflow_dispatch:
