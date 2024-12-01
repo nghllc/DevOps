@@ -1,35 +1,12 @@
-version: '3'
+version: '3.8'
+
 services:
-  front-end:
+  all-services:
     build:
-      context: ./front-end
-      dockerfile: Dockerfile
-    ports:
-      - "5173:5173"
-    command: npm run dev -- --host
-    environment:
-      - NODE_ENV=development
-  
-  user:
-    build:
-      context: ./user
+      context: .
       dockerfile: Dockerfile
     ports:
       - "3001:3001"
-    command: node server.js
-
-  cart:
-    build:
-      context: ./cart
-      dockerfile: Dockerfile
-    ports:
-      - "3003:3003"
-    command: node server.js  
-
-  product:
-    build:
-      context: ./product
-      dockerfile: Dockerfile
-    ports:
       - "3002:3002"
-    command: node server.js
+      - "3003:3003"
+      - "5173:5173"
