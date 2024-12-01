@@ -1,0 +1,18 @@
+FROM node:18
+
+WORKDIR /app
+
+# Sao chép tất cả mã nguồn vào trong container
+COPY . .
+
+# Cài đặt dependencies cho mỗi service
+RUN npm install --prefix /app/Cart
+RUN npm install --prefix /app/front-end
+RUN npm install --prefix /app/Product
+RUN npm install --prefix /app/User
+
+# Expose port cho mỗi service
+EXPOSE 3001 3002 3003 5173 
+
+# Chạy tất cả services cùng một lúc
+CMD ["sh", "-c", "cd /app/Cart && npm run dev & cd /app/front-end && npm run dev & cd /app/Product && npm run dev & cd /app/User && npm run dev"]
