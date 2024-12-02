@@ -68,7 +68,7 @@ jobs:
       - name: Build Docker images
         run: |
           aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
-          commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          
           image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:web"
           
           # Navigate into each service directory
@@ -81,8 +81,7 @@ jobs:
       - name: Push images to ECR
         run: |
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
-            commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
             image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:web"
-
+            docker images
             # Push Docker image to ECR
             docker push "$image_name"
