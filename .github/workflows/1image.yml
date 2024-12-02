@@ -45,6 +45,12 @@ jobs:
             cp .env "E-Commerce_Web_Application/$service/.env"
           done
 
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.tar.gz
+          tar -xzf trivy_0.57.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+      
       - name: Set Up Trivy Cache
         id: trivy-cache
         uses: actions/cache@v4
