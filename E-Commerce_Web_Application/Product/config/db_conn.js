@@ -12,10 +12,10 @@ const mongo_username = process.env.MONGO_USERNAME;
 const mongo_password = process.env.MONGO_PASSWORD;
 const mongo_cluster = process.env.MONGO_CLUSTER;
 const mongo_database = process.env.MONGO_DBNAME;
-
+console.log(`mongodb+srv://${mongo_username}:${mongo_password}@${mongo_cluster}.mjuaqqi.mongodb.net/${mongo_database}?retryWrites=true&w=majority`)
 mongoose.connect(`mongodb+srv://${mongo_username}:${mongo_password}@${mongo_cluster}.mjuaqqi.mongodb.net/${mongo_database}?retryWrites=true&w=majority`
 , { useNewUrlParser: true, useUnifiedTopology: true })
-.then(() => console.log(`Connected to: ${mongoose.connection.name}`))
+.then(() => console.log(`Connected to: ${mongoose.connection.name} \n `))
 .catch(err => console.log(err));
 
 
