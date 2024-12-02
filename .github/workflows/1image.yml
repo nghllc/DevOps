@@ -80,8 +80,8 @@ jobs:
       # Push images to ECR
       - name: Push images to ECR
         run: |
-            aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
-            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:web"
+          aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+          image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:web"
 
-            # Push Docker image to ECR
-            docker push "$image_name"
+          # Push Docker image to ECR
+          docker push "$image_name"
