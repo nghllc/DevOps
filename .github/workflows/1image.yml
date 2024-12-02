@@ -45,6 +45,27 @@ jobs:
             cp .env "E-Commerce_Web_Application/$service/.env"
           done
 
+      - name: Set Up Trivy Cache
+        id: trivy-cache
+        uses: actions/cache@v4
+        with:
+            path: ~/.cache/trivy/db
+            key: ${{ runner.os }}-trivy-db-cache
+      # Only download the Trivy offline database if cache miss
+      - name: Download Trivy Offline Database
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+            oras pull ghcr.io/aquasecurity/trivy-db:2
+            ls -lah
+      # Only extract the database if cache miss
+      - name: Set Up Trivy Database in Cache
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p ~/.cache/trivy/db
+          tar -xvf db.tar.gz -C ~/.cache/trivy/db
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -76,6 +97,13 @@ jobs:
 
           # Build Docker image
           docker build -t "$image_name" .
+
+      # Run Trivy to scan Docker image
+      - name: Run Trivy scan
+        run: |
+            aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:web"  
+            trivy --cache-dir ~/.cache/trivy image --exit-code 0 --format table --ignore-unfixed --severity CRITICAL,HIGH --skip-db-update --scanners vuln "$image_name"
 
       # Push images to ECR
       - name: Push images to ECR
