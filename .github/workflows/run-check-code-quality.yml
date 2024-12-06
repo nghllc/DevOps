@@ -1,27 +1,62 @@
-name: Check code quality with SonarQube
+name: SonarQube and Trivy Scanning
 
 on:
-  # push:
-  #   branches:
-  #     - main
+  push:
+     branches:
+       - dev
   workflow_dispatch:
 
 jobs:
   build:
-    name: Check code quality with SonarQube
+    name: SonarQube and Trivy Scanning
     runs-on: ubuntu-latest
     
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
-      - uses: sonarsource/sonarqube-scan-action@v3
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+      - name: SonarQube scanning
+        uses: sonarsource/sonarqube-scan-action@v3
+          env:
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       # If you wish to fail your job when the Quality Gate is red, uncomment the
       # following lines. This would typically be used to fail a deployment.
       # - uses: sonarsource/sonarqube-quality-gate-action@master
       #   timeout-minutes: 5
       #   env:
       #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.tar.gz
+          tar -xzf trivy_0.57.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+
+      # Set up cache for Trivy database, include version in the cache key
+      - name: Set Up Trivy Cache
+        id: trivy-cache
+        uses: actions/cache@v4
+        with:
+            path: ~/.cache/trivy/db
+            key: ${{ runner.os }}-trivy-db-cache
+
+      # Only download the Trivy offline database if cache miss
+      - name: Download Trivy Offline Database
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+            oras pull ghcr.io/aquasecurity/trivy-db:2
+            ls -lah
+
+      # Only extract the database if cache miss
+      - name: Set Up Trivy Database in Cache
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p ~/.cache/trivy/db
+          tar -xvf db.tar.gz -C ~/.cache/trivy/db
+      
+      - name: Trivy scanning
+        run: |
+          trivy fs --severity HIGH,CRITICAL ./E-Commerce_Web_Application/
