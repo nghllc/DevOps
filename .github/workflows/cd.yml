@@ -118,8 +118,7 @@ jobs:
                 image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"
                 
                 # Push Docker image to ECR
-                # docker push "$image_name"
-
+                docker push "$image_name"
             done
             
     
