@@ -1,0 +1,44 @@
+name: CI - Build and Test Docker Images
+
+on:
+  workflow_call: # Reusable workflow
+    inputs:
+      branch:
+        description: "Branch to run CI"
+        required: true
+        type: string
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-22.04
+    env:
+      MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+      MONGO_CLUSTER: ${{ secrets.MONGO_CLUSTER }}
+      MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
+      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Test build images
+        run: |
+          services=("Cart" "User" "Product" "front-end")
+          for service in "${services[@]}"; do
+            # Navigate into each service directory
+            cd "E-Commerce_Web_Application/$service" || exit 1
+            
+            # Create .env file in the current service directory
+            echo "MONGO_USERNAME=${{ env.MONGO_USERNAME }}" > .env
+            echo "MONGO_PASSWORD=${{ env.MONGO_PASSWORD }}" >> .env
+            echo "MONGO_CLUSTER=${{ env.MONGO_CLUSTER }}" >> .env
+            echo "MONGO_DBNAME=${{ env.MONGO_DBNAME }}" >> .env
+            echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}" >> .env
+            cat .env
+            # Build Docker image
+            docker build -t "${service,,}-ci-test" .
+
+            # Go back to the root directory
+            cd - || exit 1
+          done

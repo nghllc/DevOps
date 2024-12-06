@@ -1,0 +1,24 @@
+name: CI/CD Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - '**'
+  workflow_dispatch:
+
+jobs:
+  run-ci:
+    uses: ./.github/workflows/ci.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets: inherit
+
+  run-cd:
+    needs: run-ci
+    uses: ./.github/workflows/cd.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets: inherit

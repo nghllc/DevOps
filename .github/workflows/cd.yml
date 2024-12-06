@@ -1,0 +1,125 @@
+name: CD - Push to ECR and Deploy
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        description: "Branch to run CD"
+        required: true
+        type: string
+
+jobs:
+  push-to-ecr:
+    runs-on: ubuntu-22.04
+    env:
+        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
+        MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
+        MONGO_CLUSTER: ${{ secrets.MONGO_CLUSTER }}
+        MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
+        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+    steps:
+    -   name: Checkout code
+        uses: actions/checkout@v2
+
+    -   name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+    -   name: Log in to Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v1
+
+    -   name: Create ECR repository if it doesn't exist
+        run: |
+          aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+          aws ecr describe-repositories --repository-names "lamlt-sonvt" || aws ecr create-repository --repository-name "lamlt-sonvt"
+
+    -   name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.tar.gz
+          tar -xzf trivy_0.57.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
+
+    -   name: Set Up Trivy Cache
+        id: trivy-cache
+        uses: actions/cache@v4
+        with:
+            path: ~/.cache/trivy/db
+            key: ${{ runner.os }}-trivy-db-cache
+
+    -   name: Download Trivy Offline Database
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+            oras pull ghcr.io/aquasecurity/trivy-db:2
+            ls -lah
+
+    -   name: Set Up Trivy Database in Cache
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p ~/.cache/trivy/db
+          tar -xvf db.tar.gz -C ~/.cache/trivy/db
+
+    -   name: Copy .env to services
+        run: |
+            services=("Cart" "User" "Product" "front-end")
+            for service in "${services[@]}"; do
+                # Navigate into each service directory
+                cd "E-Commerce_Web_Application/$service" || exit 1
+                
+                # Create .env file in the current service directory
+                echo "MONGO_USERNAME=${{ env.MONGO_USERNAME }}" > .env
+                echo "MONGO_PASSWORD=${{ env.MONGO_PASSWORD }}" >> .env
+                echo "MONGO_CLUSTER=${{ env.MONGO_CLUSTER }}" >> .env
+                echo "MONGO_DBNAME=${{ env.MONGO_DBNAME }}" >> .env
+                echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}" >> .env
+                cat .env
+
+                # Go back to the root directory
+                cd - || exit 1
+            done      
+
+    -   name: Build images
+        run: |
+          services=("Cart" "User" "Product" "front-end")
+          for service in "${services[@]}"; do
+            aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
+
+            # Build Docker image
+            cd "E-Commerce_Web_Application/$service"
+            cat .env
+            docker build -t "$image_name" .
+
+            cd - || exit 1
+          done
+
+    -   name: Run Trivy scan
+        run: |
+            services=("Cart" "User" "Product" "front-end")
+            for service in "${services[@]}"; do
+                aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+                commit_id=$(echo "${GITHUB_SHA}" | cut -c1-7)
+                image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"  
+                trivy --cache-dir ~/.cache/trivy image --exit-code 0 --format table --ignore-unfixed --severity CRITICAL,HIGH --skip-db-update --scanners vuln "$image_name"
+            done
+
+    -   name: Push images to ECR
+        run: |
+            services=("Cart" "User" "Product" "front-end")
+            for service in "${services[@]}"; do
+                aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
+                image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"
+                
+                # Push Docker image to ECR
+                # docker push "$image_name"
+
+            done
+            
+    
