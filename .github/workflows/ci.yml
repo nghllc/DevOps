@@ -1,44 +1,63 @@
-name: CI - Build and Test Docker Images
+name: CI
 
 on:
-  workflow_call: # Reusable workflow
-    inputs:
-      branch:
-        description: "Branch to run CI"
-        required: true
-        type: string
+  push:
+     branches:
+       - dev
+  workflow_dispatch:
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-22.04
-    env:
-      MONGO_USERNAME: ${{ secrets.MONGO_USERNAME }}
-      MONGO_PASSWORD: ${{ secrets.MONGO_PASSWORD }}
-      MONGO_CLUSTER: ${{ secrets.MONGO_CLUSTER }}
-      MONGO_DBNAME: ${{ secrets.MONGO_DBNAME }}
-      ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-
+  build:
+    name: SonarQube and Trivy Scanning
+    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Test build images
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: SonarQube scanning
+        uses: sonarsource/sonarqube-scan-action@v3
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        continue-on-error: true
+      # If you wish to fail your job when the Quality Gate is red, uncomment the
+      # following lines. This would typically be used to fail a deployment.
+      # - uses: sonarsource/sonarqube-quality-gate-action@master
+      #   timeout-minutes: 5
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Install Trivy
         run: |
-          services=("Cart" "User" "Product" "front-end")
-          for service in "${services[@]}"; do
-            # Navigate into each service directory
-            cd "E-Commerce_Web_Application/$service" || exit 1
-            
-            # Create .env file in the current service directory
-            echo "MONGO_USERNAME=${{ env.MONGO_USERNAME }}" > .env
-            echo "MONGO_PASSWORD=${{ env.MONGO_PASSWORD }}" >> .env
-            echo "MONGO_CLUSTER=${{ env.MONGO_CLUSTER }}" >> .env
-            echo "MONGO_DBNAME=${{ env.MONGO_DBNAME }}" >> .env
-            echo "ACCESS_TOKEN=${{ env.ACCESS_TOKEN }}" >> .env
-            cat .env
-            # Build Docker image
-            docker build -t "${service,,}-ci-test" .
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.57.0/trivy_0.57.0_Linux-64bit.tar.gz
+          tar -xzf trivy_0.57.0_Linux-64bit.tar.gz
+          sudo mv trivy /usr/local/bin/
 
-            # Go back to the root directory
-            cd - || exit 1
-          done
+      # Set up cache for Trivy database, include version in the cache key
+      - name: Set Up Trivy Cache
+        id: trivy-cache
+        uses: actions/cache@v4
+        with:
+            path: ~/.cache/trivy/db
+            key: ${{ runner.os }}-trivy-db-cache
+
+      # Only download the Trivy offline database if cache miss
+      - name: Download Trivy Offline Database
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+            oras pull ghcr.io/aquasecurity/trivy-db:2
+            ls -lah
+
+      # Only extract the database if cache miss
+      - name: Set Up Trivy Database in Cache
+        if: steps.trivy-cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          mkdir -p ~/.cache/trivy/db
+          tar -xvf db.tar.gz -C ~/.cache/trivy/db
+      
+      - name: Trivy scanning
+        run: |
+          trivy fs --severity HIGH,CRITICAL ./E-Commerce_Web_Application
