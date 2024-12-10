@@ -18,8 +18,6 @@ mongoose.connect(`mongodb+srv://${mongo_username}:${mongo_password}@${mongo_clus
 .then(() => console.log(`Connected to: ${mongoose.connection.name}`))
 .catch(err => console.log(err));
 
-
-
 // async function getDataFromDatabase(id) {
 //     // Check if the data is already cached
 //     const cachedData = await getAsync(id);
@@ -56,6 +54,5 @@ mongoose.connect(`mongodb+srv://${mongo_username}:${mongo_password}@${mongo_clus
 // , { useNewUrlParser: true, useUnifiedTopology: true })
 // .then(() => console.log(`Connected to: DB`))
 // .catch(err => console.log(err));
-
 
 module.exports = mongoose;
