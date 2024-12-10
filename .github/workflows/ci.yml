@@ -1,10 +1,12 @@
 name: CI
 
 on:
-  push:
-     branches:
-       - dev
-  workflow_dispatch:
+  workflow_call:
+    inputs:
+      branch:
+        description: "Branch to run CI"
+        required: true
+        type: string
 
 jobs:
   build:
