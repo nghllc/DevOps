@@ -90,7 +90,7 @@ jobs:
           services=("Cart" "User" "Product" "front-end")
           for service in "${services[@]}"; do
             aws_account_id=$(aws sts get-caller-identity --query "Account" --output text)
-            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}-${commit_id}"
+            image_name="${aws_account_id}.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com/lamlt-sonvt:${service,,}"
 
             # Build Docker image
             cd "E-Commerce_Web_Application/$service"
