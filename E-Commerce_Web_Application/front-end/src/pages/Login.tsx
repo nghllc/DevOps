@@ -10,7 +10,7 @@ function Login() {
     event.preventDefault();
     
     try {
-      const response = await fetch("test-1405277720.us-east-1.elb.amazonaws.com/users/login", {
+      const response = await fetch("http://0.0.0.0:3001/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

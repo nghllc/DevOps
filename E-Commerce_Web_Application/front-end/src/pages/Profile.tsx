@@ -17,7 +17,7 @@ function Profile() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      fetch("test-1405277720.us-east-1.elb.amazonaws.com/users/", {
+      fetch("http://0.0.0.0:3001/users/", {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

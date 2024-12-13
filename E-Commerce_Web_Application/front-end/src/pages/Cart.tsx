@@ -18,7 +18,7 @@ function Cart() {
           return;
         }
 
-        const response = await fetch("test-1405277720.us-east-1.elb.amazonaws.com/cart", {
+        const response = await fetch("http://0.0.0.0:3003/cart", {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token,

@@ -14,7 +14,7 @@ function Register() {
     event.preventDefault();
 
     try {
-      const response = await fetch("test-1405277720.us-east-1.elb.amazonaws.com/users", {
+      const response = await fetch("http://0.0.0.0:3001/users", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -52,7 +52,7 @@ function Register() {
     <div className="bg-img">
       <div className="registerContent">
         <header>Register Form</header>
-        <form action="test-1405277720.us-east-1.elb.amazonaws.com/users" method="post" onSubmit={handleSubmit}>
+        <form action="http://0.0.0.0:3001/users" method="post" onSubmit={handleSubmit}>
           <div className="row">
             <div className="col">
               <h6>First name</h6>
