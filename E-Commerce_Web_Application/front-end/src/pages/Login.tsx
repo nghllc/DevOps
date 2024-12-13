@@ -10,7 +10,7 @@ function Login() {
     event.preventDefault();
     
     try {
-      const response = await fetch("http://0.0.0.0:3001/users/login", {
+      const response = await fetch("http://backend.local:3001/users/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -9,7 +9,7 @@ function ProductInfo() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(`http://0.0.0.0:3002/products/${productID}`, {
+        const response = await fetch(`http://backend.local:3002/products/${productID}`, {
           headers: {
             "Content-Type": "application/json",
           },
@@ -29,7 +29,7 @@ function ProductInfo() {
     const token = localStorage.getItem("token");
     if (token) {
       console.log("Add to cart");
-      fetch(`http://0.0.0.0:3003/cart/${productID}`, {
+      fetch(`http://backend.local:3003/cart/${productID}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
