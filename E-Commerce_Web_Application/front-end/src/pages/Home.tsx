@@ -15,22 +15,29 @@ function Home() {
 
   const fetchData = async () => {
     try {
+      console.log("Fetching data from: http://backend.local:3002/products");
+  
       const response = await fetch("http://backend.local:3002/products", {
         headers: {
           "Content-Type": "application/json",
         },
       });
-
+  
+      console.log("Response status:", response.status);
+      console.log("Response OK:", response.ok);
+  
       if (response.ok) {
         const jsonData = await response.json();
+        console.log("Fetched data:", jsonData);
         setData(jsonData);
       } else {
-        console.log("Failed to fetch products");
+        console.log("Failed to fetch products, status:", response.status);
       }
     } catch (error) {
-      console.error("Error:", error);
+      console.error("Error during fetch:", error);
     }
   };
+  
 
   const handleLinkClick = (productID: any) => {
     localStorage.setItem("productID", productID);
