@@ -35,7 +35,14 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    // Cho phép tất cả các origin hoặc không có origin (ví dụ: request từ Postman)
+    callback(null, origin);
+  },
+  credentials: true, // Hỗ trợ gửi cookies hoặc authentication tokens
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
