@@ -13,31 +13,30 @@ function Home() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
-    try {
-      console.log("Fetching data from: http://backend.local:3002/products");
-  
-      const response = await fetch("http://backend.local:3002/products", {
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-  
-      console.log("Response status:", response.status);
-      console.log("Response OK:", response.ok);
-  
-      if (response.ok) {
-        const jsonData = await response.json();
+  const fetchData = () => {
+    fetch("http://backend.local:3002/products", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
+      .then((response) => {
+        console.log("HERE1")
+        if (!response.ok) {
+          throw new Error(`Failed to fetch products, status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((jsonData) => {
+        console.log("HERE2")
         console.log("Fetched data:", jsonData);
         setData(jsonData);
-      } else {
-        console.log("Failed to fetch products, status:", response.status);
-      }
-    } catch (error) {
-      console.error("Error during fetch:", error);
-    }
+      })
+      .catch((error) => {
+        console.log("HERE3")
+        console.error("Error during fetch:", error);
+      });
   };
-  
 
   const handleLinkClick = (productID: any) => {
     localStorage.setItem("productID", productID);
