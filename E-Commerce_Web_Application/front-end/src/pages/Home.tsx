@@ -14,7 +14,7 @@ function Home() {
   }, []);
 
   const fetchData = () => {
-    fetch("http://backend.local:3002/products", {
+    fetch("http://frontend.local:3002/products", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -49,7 +49,7 @@ function Home() {
     if (selectedCategory === "idle") {
       fetchData();
     } else {
-      fetch(`http://backend.local:3002/filter/category/${selectedCategory}`, {
+      fetch(`http://frontend.local:3002/filter/category/${selectedCategory}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

@@ -18,7 +18,7 @@ function Cart() {
           return;
         }
 
-        const response = await fetch("http://backend.local:3003/cart", {
+        const response = await fetch("http://frontend.local:3003/cart", {
           headers: {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token,
