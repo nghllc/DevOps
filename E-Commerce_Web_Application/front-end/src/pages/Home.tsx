@@ -14,7 +14,7 @@ function Home() {
   }, []);
 
   const fetchData = () => {
-    fetch("http://backend.local:3002/products", {
+    fetch("/api/products", {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
