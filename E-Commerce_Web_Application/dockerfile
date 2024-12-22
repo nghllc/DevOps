@@ -1,5 +1,12 @@
 FROM node:18
 
+# Cài đặt Nginx
+RUN apt-get update && apt-get install -y nginx
+
+# Tạo thư mục cho Nginx và sao chép cấu hình vào
+COPY nginx.conf /etc/nginx/nginx.conf
+
+# Tạo thư mục làm việc cho các services
 WORKDIR /app
 
 # Sao chép tất cả mã nguồn vào trong container
@@ -11,8 +18,8 @@ RUN npm install --prefix /app/front-end
 RUN npm install --prefix /app/Product
 RUN npm install --prefix /app/User
 
-# Expose port cho mỗi service
-EXPOSE 3001 3002 3003 5173 
+# Expose port cho mỗi service và Nginx
+EXPOSE 3001 3002 3003 5173 1234
 
 # Chạy tất cả services cùng một lúc
-CMD ["sh", "-c", "cd /app/Cart && npm run dev & cd /app/front-end && npm run dev & cd /app/Product && npm run dev & cd /app/User && npm run dev"]
+CMD ["sh", "-c", "service nginx start && cd /app/Cart && npm run dev & cd /app/front-end && npm run dev & cd /app/Product && npm run dev & cd /app/User && npm run dev"]

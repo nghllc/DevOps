@@ -49,7 +49,7 @@ function Home() {
     if (selectedCategory === "idle") {
       fetchData();
     } else {
-      fetch(`http://backend.local:3002/filter/category/${selectedCategory}`, {
+      fetch(`/api/filter/category/${selectedCategory}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

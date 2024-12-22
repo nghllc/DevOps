@@ -8,7 +8,7 @@ export default defineConfig({
     proxy: {
       // Chuyển tiếp tất cả các request có đường dẫn bắt đầu bằng /api đến backend
       '/api': {
-        target: 'http://backend.local', // Địa chỉ của backend
+        target: 'http://localhost:1234', // Địa chỉ của backend
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''), // Loại bỏ /api trước khi chuyển tiếp
       },
