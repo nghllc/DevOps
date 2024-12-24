@@ -17,6 +17,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      
+      - name: Build images
+        run: |
+          services=("Cart" "User" "Product" "front-end")
+          for service in "${services[@]}"; do
+            cd "E-Commerce_Web_Application/$service" || exit 1
+            npm test
+            cd - || exit 1
+          done
+
       - name: SonarQube Scan
         id: sonar_scan
         uses: SonarSource/sonarqube-scan-action@v4
