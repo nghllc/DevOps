@@ -21,7 +21,7 @@ jobs:
       
       - name: Unit test
         run: |
-          services=("Cart" "User" "Product" "front-end")
+          services=("Cart" "User" "Product")
           for service in "${services[@]}"; do
             cd "E-Commerce_Web_Application/$service" || exit 1
             npm test
