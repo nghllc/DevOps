@@ -18,7 +18,7 @@ mongoose.connect(`mongodb+srv://${mongo_username}:${mongo_password}@${mongo_clus
 .then(() => console.log(`Connected to: ${mongoose.connection.name} \n `))
 .catch(err => console.log(err));
 
-
+console.log("NEW COMMIT FOR DEMO")
 
 // async function getDataFromDatabase(id) {
 //     // Check if the data is already cached
